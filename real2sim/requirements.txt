@@ -1,2 +1,8 @@
 # requirements.txt
 
+mujoco
+mujoco-python-viewer
+
+pykos
+scipy
+numpy
