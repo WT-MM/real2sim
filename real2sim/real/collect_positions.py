@@ -1,4 +1,5 @@
 import json
+import time
 
 import numpy as np
 import pykos
@@ -7,7 +8,11 @@ from real2sim.configs import Cfg
 
 
 def collect_positions(
-    cfg: Cfg.RealCfg, save_path: str, loop_time: float = 0.01, save_scheme: str = "ALL_LR"
+    cfg: Cfg.RealCfg,
+    save_path: str,
+    loop_time: float = 0.01,
+    save_scheme: str = "ALL_LR",
+    verbose: bool = True,
 ) -> None:
     """Collects the positions of the actuators in the robot.
 
@@ -16,6 +21,7 @@ def collect_positions(
         save_path: The path to save the positions to.
         loop_time: The time to wait between loops (secs).
         save_scheme: The scheme to save the positions.
+        verbose: Whether to print the feedback.
     """
     all_ids = (
         cfg.robot.left_arm_ids
@@ -32,8 +38,14 @@ def collect_positions(
         while True:
             feedback = kos.actuator.get_actuators_state(all_ids)
             feedback_dict = {i.actuator_id: i for i in feedback}
+
+            if verbose:
+                print(f"Collected {feedback_dict} feedback")
+
             for id in all_ids:
                 recorded_positions[id].append(feedback_dict[id].position)
+
+            time.sleep(loop_time)
     except KeyboardInterrupt:
         if save_scheme == "LEGS_LR":
             lines = np.array(recorded_positions)[cfg.robot.left_leg_ids]
