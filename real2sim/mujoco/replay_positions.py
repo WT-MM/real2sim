@@ -95,7 +95,7 @@ def run_mujoco(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescal
         eu_ang = quaternion_to_euler_array(quat)
         eu_ang[eu_ang > math.pi] -= 2 * math.pi
 
-        target_q = np.zeros_like(q)
+        target_q = pos
 
         # Generate PD control
         tau = pd_control(target_q, q, np.array(cfg.robot.kps), dq, np.array(cfg.robot.kds))  # Calc torques
