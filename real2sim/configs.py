@@ -43,7 +43,7 @@ GPR_CONFIG = {
         sim=Cfg.SimCfg(
             dt=0.001,
             suspend=1.2,
-            lock_orientation=True,
+            lock_orientation=False,
             robot=Cfg.SimCfg.Robot(num_joints=10, kps=[100.0] * 10, kds=[10.0] * 10),
         ),
         real=Cfg.RealCfg(

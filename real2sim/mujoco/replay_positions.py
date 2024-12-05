@@ -64,6 +64,7 @@ def run_mujoco(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescal
     """
     model = mujoco.MjModel.from_xml_path(model_path)
     model.opt.timestep = cfg.dt
+    model.opt.gravity = np.zeros(3)
     data = mujoco.MjData(model)
 
 
@@ -97,10 +98,10 @@ def run_mujoco(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescal
 
         target_q = pos
 
-        # Generate PD control
-        tau = pd_control(target_q, q, np.array(cfg.robot.kps), dq, np.array(cfg.robot.kds))  # Calc torques
+        # Set joint positions directly
+        data.qpos[-cfg.robot.num_joints:] = target_q
 
-        data.ctrl = tau
+        print(f"Target q: {target_q}")
 
         if cfg.suspend:
             data.qpos[2] = cfg.suspend
@@ -108,7 +109,7 @@ def run_mujoco(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescal
         if cfg.lock_orientation:
             data.qpos[3:] = 0.0
 
-        mujoco.mj_step(model, data)
+        mujoco.mj_forward(model, data)
 
         if render:
             viewer.render()
