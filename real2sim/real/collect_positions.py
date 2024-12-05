@@ -34,6 +34,9 @@ def collect_positions(
 
     kos = pykos.KOS()
 
+    if verbose:
+        print(f"Collecting positions... Press Ctrl+C to stop")
+
     try:
         while True:
             feedback = kos.actuator.get_actuators_state(all_ids)
@@ -48,36 +51,51 @@ def collect_positions(
             time.sleep(loop_time)
     except KeyboardInterrupt:
         if save_scheme == "LEGS_LR":
-            lines = np.array(recorded_positions)[cfg.robot.left_leg_ids]
-            + np.array(recorded_positions)[cfg.robot.right_leg_ids]
+            lines = [
+                recorded_positions[i]
+                for i in cfg.robot.left_leg_ids + cfg.robot.right_leg_ids
+            ]
 
         elif save_scheme == "LEGS_RL":
-            lines = np.array(recorded_positions)[cfg.robot.right_leg_ids]
-            + np.array(recorded_positions)[cfg.robot.left_leg_ids]
+            lines = [
+                recorded_positions[i]
+                for i in cfg.robot.right_leg_ids + cfg.robot.left_leg_ids
+            ]
 
         elif save_scheme == "ARMS_LR":
-            lines = np.array(recorded_positions)[cfg.robot.left_arm_ids]
-            + np.array(recorded_positions)[cfg.robot.right_arm_ids]
+            lines = [
+                recorded_positions[i]
+                for i in cfg.robot.left_arm_ids + cfg.robot.right_arm_ids
+            ]
 
         elif save_scheme == "ARMS_RL":
-            lines = np.array(recorded_positions)[cfg.robot.right_arm_ids]
-            + np.array(recorded_positions)[cfg.robot.left_arm_ids]
+            lines = [
+                recorded_positions[i]
+                for i in cfg.robot.right_arm_ids + cfg.robot.left_arm_ids
+            ]
 
         elif save_scheme == "ALL_LR":
-            lines = np.array(recorded_positions)[cfg.robot.left_arm_ids]
-            + np.array(recorded_positions)[cfg.robot.right_arm_ids]
-            + np.array(recorded_positions)[cfg.robot.left_leg_ids]
-            + np.array(recorded_positions)[cfg.robot.right_leg_ids]
+            lines = [
+                recorded_positions[i]
+                for i in cfg.robot.left_arm_ids
+                + cfg.robot.right_arm_ids
+                + cfg.robot.left_leg_ids
+                + cfg.robot.right_leg_ids
+            ]
 
         elif save_scheme == "ALL_RL":
-            lines = np.array(recorded_positions)[cfg.robot.right_arm_ids]
-            + np.array(recorded_positions)[cfg.robot.left_arm_ids]
-            + np.array(recorded_positions)[cfg.robot.right_leg_ids]
-            + np.array(recorded_positions)[cfg.robot.left_leg_ids]
+            lines = [
+                recorded_positions[i]
+                for i in cfg.robot.right_arm_ids
+                + cfg.robot.left_arm_ids
+                + cfg.robot.right_leg_ids
+                + cfg.robot.left_leg_ids
+            ]
 
         else:
             with open(save_path, "w") as f:
                 json.dump(recorded_positions, f)
             raise ValueError(f"Invalid save scheme: {save_scheme}. Dumped to json")
 
+        lines = np.array(lines).T.tolist()
         np.save(save_path, lines)
