@@ -49,7 +49,67 @@ def get_obs(data: mujoco.MjData) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np
 def pd_control(target_q: np.ndarray, q: np.ndarray, kps: np.ndarray, dq: np.ndarray, kds: np.ndarray) -> np.ndarray:
     return kps * (target_q - q) - kds * dq
 
-def run_mujoco(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescale: float = 1.0, render: bool = True) -> None:
+def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.ndarray, timescale: float = 1.0, render: bool = True) -> None:
+    """Run the Mujoco simulation using the provided policy and configuration.
+
+    Args:
+        model_path: The path to the Mujoco model.
+        cfg: The configuration object containing simulation settings.
+        orientations: The orientations to replay.
+        timescale: Factor to scale the replay timesteps.
+        render: Whether to render the simulation.
+
+    Returns:
+        None
+    """
+    model = mujoco.MjModel.from_xml_path(model_path)
+    model.opt.timestep = cfg.dt
+    model.opt.gravity = np.zeros(3)
+    data = mujoco.MjData(model)
+
+
+    try:
+        data.qpos = model.keyframe("default").qpos
+        default = deepcopy(model.keyframe("default").qpos)[-cfg.robot.num_joints :]
+        print("Default position:", default)
+    except Exception as _:
+        print("No default position found, using zero initialization")
+        default = np.zeros(cfg.robot.num_joints)
+
+    mujoco.mj_step(model, data)
+    for ii in range(len(data.ctrl) + 1):
+        print(data.joint(ii).id, data.joint(ii).name)
+
+    data.qvel = np.zeros_like(data.qvel)
+    data.qacc = np.zeros_like(data.qacc)
+
+    if render:
+        viewer = mujoco_viewer.MujocoViewer(model, data)
+
+    for ori in orientations:
+
+        # Obtain an observation
+        q, dq, quat, v, omega, gvec = get_obs(data)
+        q = q[-cfg.robot.num_joints :]
+        dq = dq[-cfg.robot.num_joints :]
+
+        eu_ang = quaternion_to_euler_array(quat)
+        eu_ang[eu_ang > math.pi] -= 2 * math.pi
+
+        data.qpos[3:7] = eu
+
+        if cfg.suspend:
+            data.qpos[2] = cfg.suspend
+
+
+        mujoco.mj_forward(model, data)
+
+        if render:
+            viewer.render()
+
+        time.sleep(cfg.dt / timescale)
+
+def run_mujoco_positions(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescale: float = 1.0, render: bool = True) -> None:
     """Run the Mujoco simulation using the provided policy and configuration.
 
     Args:
@@ -107,7 +167,7 @@ def run_mujoco(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescal
             data.qpos[2] = cfg.suspend
 
         if cfg.lock_orientation:
-            data.qpos[3:] = 0.0
+            data.qpos[3:7] = np.array([1, 0, 0, 0])
 
         mujoco.mj_forward(model, data)
 

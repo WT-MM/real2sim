@@ -1,7 +1,7 @@
+import pykos
+
 from real2sim.configs import GPR_CONFIG, Cfg
 from real2sim.real.collect_positions import collect_positions
-
-import pykos
 
 if __name__ == "__main__":
     assert isinstance(GPR_CONFIG["config"], Cfg)
