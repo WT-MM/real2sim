@@ -3,6 +3,7 @@ import math
 import time
 from copy import deepcopy
 from typing import Tuple
+from collections import deque
 
 import mujoco
 import mujoco_viewer
@@ -33,6 +34,22 @@ def quaternion_to_euler_array(quat: np.ndarray) -> np.ndarray:
 
     # Returns roll, pitch, yaw in a NumPy array in radians
     return np.array([roll_x, pitch_y, yaw_z])
+
+
+def euler_to_quaternion(euler: np.ndarray) -> np.ndarray:
+    """Convert euler angles (roll, pitch, yaw) to quaternion [x, y, z, w].
+
+    Args:
+        euler: Array of euler angles [roll, pitch, yaw] in radians
+
+    Returns:
+        Quaternion as [x, y, z, w]
+    """
+    # Create rotation object from euler angles
+    r = R.from_euler('xyz', euler)
+
+    # Get quaternion (scipy returns as [x, y, z, w])
+    return r.as_quat()
 
 
 def get_obs(data: mujoco.MjData) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -85,6 +102,9 @@ def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.nd
 
     if render:
         viewer = mujoco_viewer.MujocoViewer(model, data)
+    
+    # Add deque to store last 50 diffs
+    diff_history = deque(maxlen=50)
 
     for ori in orientations:
 
@@ -96,7 +116,14 @@ def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.nd
         eu_ang = quaternion_to_euler_array(quat)
         eu_ang[eu_ang > math.pi] -= 2 * math.pi
 
-        data.qpos[3:7] = eu
+        diff = np.linalg.norm(ori - eu_ang)
+        diff_history.append(diff)
+        avg_diff = np.mean(list(diff_history))
+        max_diff = max(diff_history)
+        print(f"Diff: {diff:.4f}, Running Average (50): {avg_diff:.4f}, Max (50): {max_diff:.4f}")
+
+        quat = euler_to_quaternion(ori)
+        data.qpos[3:7] = quat[[3, 0, 1, 2]]  # Reorder from [x,y,z,w] to [w,x,y,z]
 
         if cfg.suspend:
             data.qpos[2] = cfg.suspend
