@@ -25,21 +25,21 @@ version: str = version_re.group(1)
 
 
 setup(
-    name="real2sim",
+    name="retos",
     version=version,
-    description="The real2sim project",
+    description="The retos (real2sim) project",
     author="Wesley Maa",
-    url="https://github.com/WT-MM/real2sim.git",
+    url="https://github.com/WT-MM/retos.git",
     long_description=long_description,
     long_description_content_type="text/markdown",
     python_requires=">=3.11",
     install_requires=requirements,
     tests_require=requirements_dev,
     extras_require={"dev": requirements_dev},
-    packages=["real2sim"],
+    packages=["retos"],
     # entry_points={
     #     "console_scripts": [
-    #         "real2sim.cli:main",
+    #         "retos.cli:main",
     #     ],
     # },
 )

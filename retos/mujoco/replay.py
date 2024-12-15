@@ -11,7 +11,7 @@ import mujoco_viewer
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-from real2sim.configs import GPR_CONFIG, Cfg
+from retos.configs import GPR_CONFIG, Cfg
 
 
 def quaternion_to_euler_array(quat: np.ndarray) -> np.ndarray:
