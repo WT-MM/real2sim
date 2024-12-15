@@ -1,6 +1,6 @@
 """Script to read IMU data from the robot."""
 
-from real2sim.real.collect_imu import collect_imu_data
+from retos.real.collect_imu import collect_imu_data
 
 if __name__ == "__main__":
     collect_imu_data(

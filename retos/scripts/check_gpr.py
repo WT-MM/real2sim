@@ -4,8 +4,8 @@ import argparse
 
 import numpy as np
 
-from real2sim.configs import GPR_CONFIG, Cfg
-from real2sim.mujoco.replay import run_mujoco_orientation, run_mujoco_positions
+from retos.configs import GPR_CONFIG, Cfg
+from retos.mujoco.replay import run_mujoco_orientation, run_mujoco_positions
 
 SAVED_POSITIONS_PATH = "gpr_lr_legs.npy"
 SAVED_ORIENTATIONS_PATH = "imu_log.npy"

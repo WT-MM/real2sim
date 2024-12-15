@@ -6,7 +6,7 @@ import time
 import numpy as np
 import pykos
 
-from real2sim.configs import Cfg
+from retos.configs import Cfg
 
 
 def collect_positions(
