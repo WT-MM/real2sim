@@ -1,9 +1,10 @@
+"""Module to define the real2sims configurations for different embodiments."""
+
 from dataclasses import dataclass, field
 
 
 @dataclass
 class Cfg:
-
     @dataclass
     class SimCfg:
         @dataclass
@@ -56,4 +57,3 @@ GPR_CONFIG = {
         ),
     ),
 }
-

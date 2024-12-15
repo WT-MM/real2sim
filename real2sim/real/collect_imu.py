@@ -1,9 +1,19 @@
+"""Module to collect IMU data from the robot."""
+
 import time
+from typing import Any
 
 import numpy as np
 from imu import HexmoveImuReader
 
-def collect_imu_data(imu_config: dict[str, any], path: str):
+
+def collect_imu_data(imu_config: dict[str, Any], path: str) -> None:
+    """Collects IMU data from the robot.
+
+    Args:
+        imu_config (dict[str, any]): The configuration of the IMU.
+        path (str): The path to save the data.
+    """
     assert "port" in imu_config
     assert "canid" in imu_config
     assert "id" in imu_config
@@ -27,7 +37,13 @@ def collect_imu_data(imu_config: dict[str, any], path: str):
     try:
         while True:
             imu_data = imu_reader.get_data()
-            log_data.append([imu_data.x_angle - angular_offset[0], imu_data.y_angle - angular_offset[1], imu_data.z_angle - angular_offset[2]])
+            log_data.append(
+                [
+                    imu_data.x_angle - angular_offset[0],
+                    imu_data.y_angle - angular_offset[1],
+                    imu_data.z_angle - angular_offset[2],
+                ]
+            )
             time.sleep(0.01)
     except KeyboardInterrupt:
         pass

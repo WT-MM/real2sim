@@ -1,9 +1,10 @@
 """Replay positions from a given trajectory."""
+
 import math
 import time
+from collections import deque
 from copy import deepcopy
 from typing import Tuple
-from collections import deque
 
 import mujoco
 import mujoco_viewer
@@ -46,7 +47,7 @@ def euler_to_quaternion(euler: np.ndarray) -> np.ndarray:
         Quaternion as [x, y, z, w]
     """
     # Create rotation object from euler angles
-    r = R.from_euler('xyz', euler)
+    r = R.from_euler("xyz", euler)
 
     # Get quaternion (scipy returns as [x, y, z, w])
     return r.as_quat()
@@ -63,10 +64,14 @@ def get_obs(data: mujoco.MjData) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np
     gvec = r.apply(np.array([0.0, 0.0, -1.0]), inverse=True).astype(np.double)
     return (q, dq, quat, v, omega, gvec)
 
+
 def pd_control(target_q: np.ndarray, q: np.ndarray, kps: np.ndarray, dq: np.ndarray, kds: np.ndarray) -> np.ndarray:
     return kps * (target_q - q) - kds * dq
 
-def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.ndarray, timescale: float = 1.0, render: bool = True) -> None:
+
+def run_mujoco_orientation(
+    model_path: str, cfg: Cfg.SimCfg, orientations: np.ndarray, timescale: float = 1.0, render: bool = True
+) -> None:
     """Run the Mujoco simulation using the provided policy and configuration.
 
     Args:
@@ -83,7 +88,6 @@ def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.nd
     model.opt.timestep = cfg.dt
     model.opt.gravity = np.zeros(3)
     data = mujoco.MjData(model)
-
 
     try:
         data.qpos = model.keyframe("default").qpos
@@ -102,12 +106,11 @@ def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.nd
 
     if render:
         viewer = mujoco_viewer.MujocoViewer(model, data)
-    
+
     # Add deque to store last 50 diffs
-    diff_history = deque(maxlen=50)
+    diff_history: deque[float] = deque(maxlen=50)
 
     for ori in orientations:
-
         # Obtain an observation
         q, dq, quat, v, omega, gvec = get_obs(data)
         q = q[-cfg.robot.num_joints :]
@@ -116,7 +119,7 @@ def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.nd
         eu_ang = quaternion_to_euler_array(quat)
         eu_ang[eu_ang > math.pi] -= 2 * math.pi
 
-        diff = np.linalg.norm(ori - eu_ang)
+        diff = float(np.linalg.norm(ori - eu_ang))
         diff_history.append(diff)
         avg_diff = np.mean(list(diff_history))
         max_diff = max(diff_history)
@@ -128,7 +131,6 @@ def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.nd
         if cfg.suspend:
             data.qpos[2] = cfg.suspend
 
-
         mujoco.mj_forward(model, data)
 
         if render:
@@ -136,7 +138,10 @@ def run_mujoco_orientation(model_path: str, cfg: Cfg.SimCfg, orientations: np.nd
 
         time.sleep(cfg.dt / timescale)
 
-def run_mujoco_positions(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescale: float = 1.0, render: bool = True) -> None:
+
+def run_mujoco_positions(
+    model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray, timescale: float = 1.0, render: bool = True
+) -> None:
     """Run the Mujoco simulation using the provided policy and configuration.
 
     Args:
@@ -153,7 +158,6 @@ def run_mujoco_positions(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray
     model.opt.timestep = cfg.dt
     model.opt.gravity = np.zeros(3)
     data = mujoco.MjData(model)
-
 
     try:
         data.qpos = model.keyframe("default").qpos
@@ -174,7 +178,6 @@ def run_mujoco_positions(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray
         viewer = mujoco_viewer.MujocoViewer(model, data)
 
     for pos in positions:
-
         # Obtain an observation
         q, dq, quat, v, omega, gvec = get_obs(data)
         q = q[-cfg.robot.num_joints :]
@@ -186,7 +189,7 @@ def run_mujoco_positions(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray
         target_q = pos
 
         # Set joint positions directly
-        data.qpos[-cfg.robot.num_joints:] = target_q
+        data.qpos[-cfg.robot.num_joints :] = target_q
 
         print(f"Target q: {target_q}")
 
@@ -203,9 +206,10 @@ def run_mujoco_positions(model_path: str, cfg: Cfg.SimCfg, positions: np.ndarray
 
         time.sleep(cfg.dt / timescale)
 
+
 if __name__ == "__main__":
     assert isinstance(GPR_CONFIG["config"], Cfg)
     assert isinstance(GPR_CONFIG["path"], str)
 
     positions = np.zeros((100000, GPR_CONFIG["config"].sim.robot.num_joints))
-    run_mujoco(GPR_CONFIG["path"], GPR_CONFIG["config"].sim, positions, timescale=1)
+    run_mujoco_positions(GPR_CONFIG["path"], GPR_CONFIG["config"].sim, positions, timescale=1)

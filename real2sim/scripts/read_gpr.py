@@ -1,3 +1,5 @@
+"""Script to read GPR joint positions from the robot."""
+
 import pykos
 
 from real2sim.configs import GPR_CONFIG, Cfg
@@ -9,21 +11,15 @@ if __name__ == "__main__":
 
     kos = pykos.KOS()
 
-
     robot_config = GPR_CONFIG["config"].real.robot
 
     ids = (
-        robot_config.left_leg_ids
-        + robot_config.right_leg_ids
-        + robot_config.left_arm_ids
-        + robot_config.right_arm_ids
+        robot_config.left_leg_ids + robot_config.right_leg_ids + robot_config.left_arm_ids + robot_config.right_arm_ids
     )
 
     for id in ids:
         print(f"Configuring actuator {id}")
-        kos.actuator.configure_actuator(
-            actuator_id=id, kp=10, kd=1, torque_enabled=False, zero_position=True
-        )
+        kos.actuator.configure_actuator(actuator_id=id, kp=10, kd=1, torque_enabled=False, zero_position=True)
 
     collect_positions(
         cfg=GPR_CONFIG["config"].real,

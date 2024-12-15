@@ -1,3 +1,5 @@
+"""Script to check GPR joint positions in MuJoCo."""
+
 import argparse
 
 import numpy as np
@@ -19,13 +21,12 @@ if __name__ == "__main__":
 
     if args.pos:
         positions = np.load(SAVED_POSITIONS_PATH)
-        positions = positions[400:] # skip the first 100
+        positions = positions[400:]  # skip the first 100
 
         print(f"Loaded positions: {positions}")
 
         # Real to sim mapping
-        signs = np.array([-1, 1, 1, -1, 1,
-                -1, 1, 1, -1, 1])
+        signs = np.array([-1, 1, 1, -1, 1, -1, 1, 1, -1, 1])
 
         sim_positions = np.deg2rad(positions)
 
