@@ -7,3 +7,6 @@ pykos
 scipy
 numpy
 kscale-imu
+
+pandas
+matplotlib
