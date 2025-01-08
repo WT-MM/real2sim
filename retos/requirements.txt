@@ -6,7 +6,7 @@ mujoco-python-viewer
 pykos
 scipy
 numpy
-kscale-imu
+# kscale-imu
 
 pandas
 matplotlib

@@ -37,9 +37,28 @@ class Cfg:
     sim: SimCfg = field(default_factory=lambda: Cfg.SimCfg())
     real: RealCfg = field(default_factory=lambda: Cfg.RealCfg())
 
+ZBOT_CONFIG = {
+    "path": "retos/embodiments/zbot/robot_fixed.xml",
+    "config": Cfg(
+        sim=Cfg.SimCfg(
+            dt=0.001,
+            suspend=0.8,
+            lock_orientation=False,
+            robot=Cfg.SimCfg.Robot(num_joints=10, kps=[100.0] * 10, kds=[10.0] * 10),
+        ),
+        real=Cfg.RealCfg(
+            robot=Cfg.RealCfg.Robot(
+                left_arm_ids=[],
+                right_arm_ids=[],
+                left_leg_ids=[],
+                right_leg_ids=[],
+            )
+        ),
+    ),
+}
 
 GPR_CONFIG = {
-    "path": "real2sim/embodiments/gpr/robot_fixed.xml",
+    "path": "retos/embodiments/gpr/robot_fixed.xml",
     "config": Cfg(
         sim=Cfg.SimCfg(
             dt=0.001,
